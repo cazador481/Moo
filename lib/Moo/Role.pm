@@ -10,6 +10,7 @@ use Moo::_Utils qw(
   _name_coderef
   _set_loaded
   _unimport_coderefs
+  @CARP_NOT
 );
 use Sub::Defer ();
 use Role::Tiny ();
@@ -49,7 +50,7 @@ sub import {
   strict->import;
   warnings->import;
   if ($Moo::MAKERS{$target} and $Moo::MAKERS{$target}{is_class}) {
-    die "Cannot import Moo::Role into a Moo class";
+    croak "Cannot import Moo::Role into a Moo class";
   }
   $INFO{$target} ||= {};
   # get symbol table reference
@@ -134,7 +135,7 @@ sub methods_provided_by {
   my ($self, $role) = @_;
   _load_module($role);
   $self->_inhale_if_moose($role);
-  die "${role} is not a Moo::Role" unless $self->is_role($role);
+  croak "${role} is not a Moo::Role" unless $self->is_role($role);
   return $self->SUPER::methods_provided_by($role);
 }
 
@@ -191,7 +192,7 @@ sub _inhale_if_moose {
           my $check = $tc->_compiled_type_constraint;
 
           $spec->{isa} = sub {
-            &$check or die "Type constraint failed for $_[0]"
+            &$check or croak "Type constraint failed for $_[0]"
           };
 
           if ($spec->{coerce}) {
@@ -275,7 +276,7 @@ sub apply_roles_to_package {
   foreach my $role (@roles) {
     _load_module($role);
     $me->_inhale_if_moose($role);
-    die "${role} is not a Moo::Role" unless $me->is_role($role);
+    croak "${role} is not a Moo::Role" unless $me->is_role($role);
   }
   $me->SUPER::apply_roles_to_package($to, @roles);
 }
@@ -284,7 +285,7 @@ sub apply_single_role_to_package {
   my ($me, $to, $role) = @_;
   _load_module($role);
   $me->_inhale_if_moose($role);
-  die "${role} is not a Moo::Role" unless $me->is_role($role);
+  croak "${role} is not a Moo::Role" unless $me->is_role($role);
   $me->SUPER::apply_single_role_to_package($to, $role);
 }
 
@@ -298,7 +299,7 @@ sub create_class_with_roles {
   foreach my $role (@roles) {
     _load_module($role);
     $me->_inhale_if_moose($role);
-    die "${role} is not a Moo::Role" unless $me->is_role($role);
+    croak "${role} is not a Moo::Role" unless $me->is_role($role);
   }
 
   my $m;

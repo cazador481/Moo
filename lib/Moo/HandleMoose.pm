@@ -1,8 +1,9 @@
 package Moo::HandleMoose;
 use Moo::_strictures;
 no warnings 'once';
-use Moo::_Utils qw(_getstash);
+use Moo::_Utils qw(_getstash @CARP_NOT);
 use Sub::Quote qw(quotify);
+use Carp qw(croak);
 
 our %TYPE_MAP;
 
@@ -11,7 +12,7 @@ our $SETUP_DONE;
 sub import { return if $SETUP_DONE; inject_all(); $SETUP_DONE = 1; }
 
 sub inject_all {
-  die "Can't inflate Moose metaclass with Moo::sification disabled"
+  croak "Can't inflate Moose metaclass with Moo::sification disabled"
     if $Moo::sification::disabled;
   require Class::MOP;
   inject_fake_metaclass_for($_)
@@ -131,7 +132,7 @@ sub inject_real_metaclass_for {
             my $type = $mapped->();
             unless ( Scalar::Util::blessed($type)
                 && $type->isa("Moose::Meta::TypeConstraint") ) {
-              die "error inflating attribute '$name' for package '$_[0]': "
+              croak "error inflating attribute '$name' for package '$_[0]': "
                 ."\$TYPE_MAP{$isa} did not return a valid type constraint'";
             }
             $coerce ? $type->create_child_type(name => $type->name) : $type;
@@ -149,7 +150,7 @@ sub inject_real_metaclass_for {
       } elsif ($coerce) {
         my $attr = quotify($name);
         my $tc = Moose::Meta::TypeConstraint->new(
-                   constraint => sub { die "This is not going to work" },
+                   constraint => sub { croak "This is not going to work" },
                    inlined => sub {
                       'my $r = $_[42]{'.$attr.'}; $_[42]{'.$attr.'} = 1; $r'
                    },
