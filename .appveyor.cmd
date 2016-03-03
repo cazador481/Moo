@@ -13,6 +13,10 @@ if "%perl_type%" == "cygwin" (
   ) else (
     cinst -y StrawberryPerl --version %perl_version%
   )
+  if errorlevel 1 (
+    type C:\ProgramData\chocolatey\logs\chocolatey.log
+    exit /b 1
+  )
   set "PATH=C:\Strawberry\perl\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\c\bin;%PATH%"
 ) else if "%perl_type%" == "system" (
   mkdir c:\dmake
